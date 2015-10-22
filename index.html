@@ -1,0 +1,123 @@
+<html>
+<head>
+	<title>Private Key Generator</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+	<script type="text/javascript" src="hmac-sha512.js"></script>
+
+	<style type="text/css">
+	body {
+		line-height: 2em;
+		margin: 0;
+		padding: 0 1em;
+	}
+	span {
+		display: block;
+		font-weight: bold;
+	}
+	i, a {
+		font-weight: normal;
+		font-size: 18px;
+		color: #ccc;
+	}
+	a {
+		color: #339;
+	}
+	input, button {
+		width: 100%;
+		padding: 0.5em;
+		margin: 0.5em 0;
+	}
+	input {
+		border: 1px solid #999;
+	}
+	#result, #number, #keyword {
+		color: #fff;
+		background-color: #fff;
+	}
+	#keyword:focus, #result:focus, #number:focus {
+		color: #ccc;
+	}
+	.empty {
+		border-color: #933;
+		background-color: #E8B3B3 !important;
+	}
+	* {
+		font-size: 24px;
+		font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif;
+	}
+	</style>
+</head>
+<body>
+	<span>SECRET:</span>
+	<input type="password" id="pass"><br>
+	<span>KEYWORD: <i>click to view</i></span>
+	<input type="text" id="keyword"><br>
+	<span>RESULT: <i>click to view</i></span>
+	<input type="text" id="result" class="empty" placeholder="change SECRET &amp; KEYWORD first">
+	<input type="text" id="number" class="empty" placeholder="this is number only code">
+	<i>source code at <a href="https://github.com/iwinmin/private_key">https://github.com/iwinmin/private_key</a></i>
+</body>
+</html>
+<script type="text/javascript">
+var val32 = 0x100000000;
+var maps = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*(),./<>?;";//':\"[]{}\\|`_+-=";
+function gen_pass(pass, key)
+{
+	var hash = key;
+	for (var i = 0; i < 32; i++)
+	{
+		hash = CryptoJS.HmacSHA512(hash, pass).toString();
+	}
+
+	var pwd = CryptoJS.HmacSHA512(hash, pass);
+	pass = '';
+	key = '';
+	for (var i = 0; i < pwd.words.length; i++)
+	{
+		hash = pwd.words[i];
+		if (hash < 0)
+		{
+			hash += val32;
+		}
+		pass += maps.charAt(hash % maps.length);
+		key += String(hash % 10);
+	}
+
+	return [pass, key];
+}
+
+function $(id)
+{
+	return document.getElementById(id);
+}
+
+var keys_json = window.localStorage.KEYS;
+// var KEYS = keys_json ? JSON.parse(keys_json) : [];
+
+$('keyword').value = keys_json || '';
+
+function do_make()
+{
+	var pass = $('pass').value;
+	var key = $('keyword').value.trim();
+
+	window.localStorage.KEYS = key;
+
+	var pwd = gen_pass(pass, key);
+	$('result').value = pwd[0];
+	$('result').className = '';
+	$('number').value = pwd[1];
+	$('number').className = '';
+}
+
+function clear()
+{
+	$('result').value = '';
+	$('result').className = 'empty';
+	$('number').value = '';
+	$('number').className = 'empty';
+}
+$('keyword').onchange = do_make;
+$('pass').onchange = do_make;
+
+</script>
