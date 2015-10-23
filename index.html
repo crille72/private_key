@@ -71,15 +71,15 @@
 	</style>
 </head>
 <body>
-	<span>SECRET:</span>
+	<span>私钥:</span>
 	<input type="password" id="pass">
-	<span>KEYWORD:</span>
+	<span>关键字:</span>
 	<select id="keyword"></select>
 	<a id="add">+</a>
-	<span>RESULT:</span>
-	<input type="text" id="result" placeholder="change SECRET &amp; KEYWORD first">
-	<input type="text" id="number" placeholder="this is number only code">
-	<b>touch or press mouse button to view the RESULT</b><br>
+	<span>生成码:</span>
+	<input type="text" id="result" placeholder="请先输入私钥和关键字">
+	<input type="text" id="number" placeholder="这是纯数字密钥">
+	<b>触摸屏幕或按下鼠标按键可以查看生成码</b><br>
 	<i>source code at <a href="https://github.com/iwinmin/private_key">https://github.com/iwinmin/private_key</a></i>
 </body>
 </html>
@@ -144,7 +144,7 @@ function show_keys()
 }
 function add_key()
 {
-	var key = prompt('input keyword');
+	var key = prompt('请输入关键字');
 
 	if (key && (key = key.trim()))
 	{
