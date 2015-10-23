@@ -37,18 +37,18 @@
 		margin: 0.25em 0;
 	}
 	select {
-		width: 70%;
+		width: 60%;
 		padding: 0.5em 0.25em;
-		max-width: 400px;
+		max-width: 300px;
 		margin: 0.25em 0;
 	}
-	#add {
+	#add, #remove {
 		display: inline-block;
 		border: 1px solid #999;
 		padding: 0.45em 1em;
 		font-size: 18px;
 		font-weight: bold;
-		margin-left: 1em;
+		margin-left: 0.5em;
 	}
 	input {
 		border: 1px solid #999;
@@ -76,6 +76,7 @@
 	<span>KEYWORD:</span>
 	<select id="keyword"></select>
 	<a id="add">+</a>
+	<a id="remove">-</a>
 	<span>RESULT:</span>
 	<input type="text" id="result" placeholder="change SECRET &amp; KEYWORD first">
 	<input type="text" id="number" placeholder="this is number only code">
@@ -162,6 +163,28 @@ function add_key()
 		do_make();
 	}
 }
+function remove_key()
+{
+	var key = $('keyword');
+	if (key.selectedIndex == -1)
+	{
+		return;
+	}
+	key = key.options[key.selectedIndex].value;
+
+	for (var i = KEYS.length; i --> 0 ;)
+	{
+		if (KEYS[i] === key)
+		{
+			KEYS.splice(i, 1);
+		}
+	}
+
+	window.localStorage.SELECT_KEY = KEYS[0] || '';
+	window.localStorage.KEY_LIST = JSON.stringify(KEYS);
+	show_keys();
+	do_make();
+}
 
 function do_make()
 {
@@ -206,6 +229,7 @@ document.addEventListener('mouseup', hide);
 $('keyword').onchange = do_make;
 $('pass').onchange = do_make;
 $('add').onclick = add_key;
+$('remove').onclick = remove_key;
 
 var KEYS = [];
 var keys_json = window.localStorage.KEY_LIST;
