@@ -8,24 +8,47 @@
 	body {
 		line-height: 2em;
 		margin: 0;
-		padding: 0 1em;
+		padding: 0.5em 1em;
 	}
 	span {
 		display: block;
 		font-weight: bold;
+		line-height: 1.5em;
 	}
 	i, a {
 		font-weight: normal;
-		font-size: 18px;
+		font-size: 12px;
 		color: #ccc;
+		line-height: 1.5em;
 	}
 	a {
 		color: #339;
 	}
+	b {
+		font-size: 14px;
+		color: #888;
+		line-height: 1.5em;
+	}
 	input, button {
+		display: block;
 		width: 100%;
+		max-width: 500px;
 		padding: 0.5em;
-		margin: 0.5em 0;
+		margin: 0.25em 0;
+	}
+	select {
+		width: 70%;
+		padding: 0.5em 0.25em;
+		max-width: 400px;
+		margin: 0.25em 0;
+	}
+	#add {
+		display: inline-block;
+		border: 1px solid #999;
+		padding: 0.45em 1em;
+		font-size: 18px;
+		font-weight: bold;
+		margin-left: 1em;
 	}
 	input {
 		border: 1px solid #999;
@@ -34,7 +57,7 @@
 		color: #fff;
 		background-color: #fff;
 	}
-	#keyword:focus, #result:focus, #number:focus {
+	.show #keyword, #keyword:focus, .show #result, .show #number {
 		color: #ccc;
 	}
 	.empty {
@@ -42,34 +65,36 @@
 		background-color: #E8B3B3 !important;
 	}
 	* {
-		font-size: 24px;
+		font-size: 18px;
 		font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif;
 	}
 	</style>
 </head>
 <body>
 	<span>SECRET:</span>
-	<input type="password" id="pass"><br>
-	<span>KEYWORD: <i>click to view</i></span>
-	<input type="text" id="keyword"><br>
-	<span>RESULT: <i>click to view</i></span>
-	<input type="text" id="result" class="empty" placeholder="change SECRET &amp; KEYWORD first">
-	<input type="text" id="number" class="empty" placeholder="this is number only code">
+	<input type="password" id="pass">
+	<span>KEYWORD:</span>
+	<select id="keyword"></select>
+	<a id="add">+</a>
+	<span>RESULT:</span>
+	<input type="text" id="result" placeholder="change SECRET &amp; KEYWORD first">
+	<input type="text" id="number" placeholder="this is number only code">
+	<b>touch or press mouse button to view the RESULT</b><br>
 	<i>source code at <a href="https://github.com/iwinmin/private_key">https://github.com/iwinmin/private_key</a></i>
 </body>
 </html>
 <script type="text/javascript">
 var val32 = 0x100000000;
-var maps = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*(),./<>?;";//':\"[]{}\\|`_+-=";
+var maps = "01234567890123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*(),./<>?;";//':\"[]{}\\|`_+-=";
 function gen_pass(pass, key)
 {
 	var hash = key;
 	for (var i = 0; i < 32; i++)
 	{
-		hash = CryptoJS.HmacSHA512(hash, pass).toString();
+		hash = CryptoJS.HmacSHA512(hash, hash + pass).toString();
 	}
 
-	var pwd = CryptoJS.HmacSHA512(hash, pass);
+	var pwd = CryptoJS.HmacSHA512(hash + pass, hash);
 	pass = '';
 	key = '';
 	for (var i = 0; i < pwd.words.length; i++)
@@ -90,18 +115,66 @@ function $(id)
 {
 	return document.getElementById(id);
 }
+function html(str)
+{
+	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+}
 
-var keys_json = window.localStorage.KEYS;
-// var KEYS = keys_json ? JSON.parse(keys_json) : [];
+function show_keys()
+{
+	var sel = window.localStorage.SELECT_KEY;
+	var dom = $('keyword');
+	var i;
+	var str = '';
+	for (i = 0; i < KEYS.length; i++)
+	{
+		str += '<option></option>';
+	}
+	dom.innerHTML = str;
 
-$('keyword').value = keys_json || '';
+	for (i = 0; i < KEYS.length; i++)
+	{
+		dom.options[i].value = KEYS[i];
+		dom.options[i].innerHTML = html(KEYS[i]);
+		if (sel === KEYS[i])
+		{
+			dom.selectedIndex = i;
+		}
+	}
+}
+function add_key()
+{
+	var key = prompt('input keyword');
+
+	if (key && (key = key.trim()))
+	{
+		for (var i = KEYS.length; i --> 0 ;)
+		{
+			if (KEYS[i] === key)
+			{
+				KEYS.splice(i, 1);
+			}
+		}
+		KEYS.unshift(key);
+		window.localStorage.SELECT_KEY = key;
+		window.localStorage.KEY_LIST = JSON.stringify(KEYS);
+		show_keys();
+		do_make();
+	}
+}
 
 function do_make()
 {
 	var pass = $('pass').value;
-	var key = $('keyword').value.trim();
+	var key = $('keyword');
 
-	window.localStorage.KEYS = key;
+	if (pass == '' || key.selectedIndex == -1)
+	{
+		return clear();
+	}
+	key = key.options[key.selectedIndex].value;
+
+	window.localStorage.SELECT_KEY = key;
 
 	var pwd = gen_pass(pass, key);
 	$('result').value = pwd[0];
@@ -117,7 +190,33 @@ function clear()
 	$('number').value = '';
 	$('number').className = 'empty';
 }
+function show()
+{
+	document.body.className = 'show';
+}
+function hide()
+{
+	document.body.className = '';
+}
+
+document.addEventListener('touchstart', show);
+document.addEventListener('touchend', hide);
+document.addEventListener('mousedown', show);
+document.addEventListener('mouseup', hide);
 $('keyword').onchange = do_make;
 $('pass').onchange = do_make;
+$('add').onclick = add_key;
 
+var KEYS = [];
+var keys_json = window.localStorage.KEY_LIST;
+
+if (keys_json)
+{
+	try {
+		KEYS = JSON.parse(keys_json);
+		show_keys();
+	}
+	catch (e) {}
+}
+clear();
 </script>
