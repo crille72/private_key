@@ -2,6 +2,7 @@
 <head>
 	<title>Private Key Generator</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<script type="text/javascript" src="hmac-sha512.js"></script>
 
 	<style type="text/css">
@@ -72,6 +73,11 @@
 		font-size: 18px;
 		font-family: "Microsoft YaHei", Arial, Helvetica, sans-serif;
 	}
+	#weixin {
+		padding-top:30px;
+		display:block;
+		color: red;
+	}
 	</style>
 </head>
 <body>
@@ -86,6 +92,7 @@
 	<input type="text" id="number" placeholder="这是纯数字密码">
 	<b>触摸屏幕或按下鼠标按键可以查看生成码</b><br>
 	<i>source code at <a href="https://github.com/iwinmin/private_key">https://github.com/iwinmin/private_key</a></i>
+	<b id="weixin">由于微信服务器自动重排页面, 微信用户请点击右上方 "三个点" 的图标, 选择 "在浏览器中打开" 即可正常使用. 也可以用PC浏览器打开使用.</b>
 </body>
 </html>
 <script type="text/javascript">
@@ -247,4 +254,8 @@ if (keys_json)
 	catch (e) {}
 }
 clear();
+
+setTimeout(function(){
+	$('weixin').style.display = 'none';
+}, 50);
 </script>
