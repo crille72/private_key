@@ -57,11 +57,11 @@
 	input {
 		border: 1px solid #999;
 	}
-	#result, #number, #keyword {
+	#result, #number, #keyword, #alnum {
 		color: #fff;
 		background-color: #fff;
 	}
-	.show #keyword, #keyword:focus, .show #result, .show #number {
+	.show #keyword, #keyword:focus, .show #result, .show #number, .show #alnum {
 		color: #ccc;
 	}
 	.empty {
@@ -84,6 +84,7 @@
 	<span>RESULT:</span>
 	<input type="text" id="result" placeholder="change SECRET &amp; KEYWORD first">
 	<input type="text" id="number" placeholder="this is number only code">
+	<input type="text" id="alnum" placeholder="this isalpha and number code">
 	<b>touch or press mouse button to view the RESULT</b><br>
 	<i>source code at <a href="https://github.com/iwinmin/private_key">https://github.com/iwinmin/private_key</a></i>
 </body>
@@ -91,6 +92,7 @@
 <script type="text/javascript">
 var val32 = 0x100000000;
 var maps = "01234567890123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*(),./<>?;";//':\"[]{}\\|`_+-=";
+var map2 = "01234567890123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 function gen_pass(pass, key)
 {
 	var hash = key;
@@ -100,6 +102,7 @@ function gen_pass(pass, key)
 	}
 
 	var pwd = CryptoJS.HmacSHA512(hash + pass, hash);
+	var alnum = '';
 	pass = '';
 	key = '';
 	for (var i = 0; i < pwd.words.length; i++)
@@ -110,10 +113,11 @@ function gen_pass(pass, key)
 			hash += val32;
 		}
 		pass += maps.charAt(hash % maps.length);
+		alnum += map2.charAt(hash % map2.length);
 		key += String(hash % 10);
 	}
 
-	return [pass, key];
+	return [pass, key, alnum];
 }
 
 function $(id)
@@ -176,6 +180,10 @@ function remove_key()
 	}
 	key = key.options[key.selectedIndex].value;
 
+	if (!confirm('Confirm to remove KEYWORD:'+key+' ?'))
+	{
+		return;
+	}
 	for (var i = KEYS.length; i --> 0 ;)
 	{
 		if (KEYS[i] === key)
@@ -208,6 +216,8 @@ function do_make()
 	$('result').className = '';
 	$('number').value = pwd[1];
 	$('number').className = '';
+	$('alnum').value = pwd[2];
+	$('alnum').className = '';
 }
 
 function clear()
@@ -216,6 +226,8 @@ function clear()
 	$('result').className = 'empty';
 	$('number').value = '';
 	$('number').className = 'empty';
+	$('alnum').value = '';
+	$('alnum').className = 'empty';
 }
 function show()
 {
